@@ -15,13 +15,13 @@ const screen = blessed.screen();
 /* eslint-disable new-cap */
 const grid = new contrib.grid({
   rows: 1,
-  cols: 2,
+  cols: 4,
   screen
 });
 /* eslint-enable new-cap */
 
 const line = grid.set(
-  0, 0, 1, 1, contrib.line, { label: 'Historical load average' }
+  0, 0, 1, 3, contrib.line, { label: 'Historical load average' }
 );
 const avgSeries = {
   style: {
@@ -36,9 +36,12 @@ function updateLine() {
 }
 
 const bar = grid.set(
-  0, 1, 1, 1, contrib.bar, {
+  0, 3, 1, 1, contrib.bar, {
     label: 'Current load average',
-    maxHeight: 1
+    maxHeight: 1,
+    barWidth: 3,
+    xOffset: 1,
+    barSpacing: 2
   }
 );
 
