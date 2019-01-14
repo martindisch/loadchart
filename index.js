@@ -3,12 +3,21 @@ const contrib = require('blessed-contrib');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
+/*
+ * Global data
+ */
+
 const historicalAvg = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 const historicalUnit = [
   '60', '55', '50', '45', '40', '35',
   '30', '25', '20', '15', '10', '5'
 ];
 let currentAvg = [0, 0, 0];
+
+
+/*
+ * Screen & grid setup
+ */
 
 const screen = blessed.screen();
 
@@ -20,9 +29,15 @@ const grid = new contrib.grid({
 });
 /* eslint-enable new-cap */
 
+
+/*
+ * Line chart
+ */
+
 const line = grid.set(
   0, 0, 1, 3, contrib.line, { label: 'Historical load average' }
 );
+
 const avgSeries = {
   style: {
     line: 'yellow'
@@ -34,6 +49,11 @@ const avgSeries = {
 function updateLine() {
   line.setData([avgSeries]);
 }
+
+
+/*
+ * Bar chart
+ */
 
 const bar = grid.set(
   0, 3, 1, 1, contrib.bar, {
@@ -52,6 +72,11 @@ function updateBar() {
   });
 }
 
+
+/*
+ * Data update functions
+ */
+
 async function getLoadAverage() {
   const { stdout } = await exec('cat /proc/loadavg');
   const tokens = stdout.split(' ').slice(0, 3);
@@ -68,6 +93,11 @@ async function updateGrid() {
 }
 
 setInterval(updateGrid, 5000);
+
+
+/*
+ * Screen handling for exiting & resizing
+ */
 
 screen.key(['escape', 'q', 'C-c'], () => process.exit(0));
 
