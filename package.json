@@ -1,0 +1,30 @@
+{
+  "name": "loadchart",
+  "version": "1.0.0",
+  "description": "Graphically shows load averages in the terminal",
+  "main": "index.js",
+  "scripts": {
+    "eslint": "eslint **/*.js",
+    "eslint-fix": "eslint --fix **/*.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martindisch/loadchart.git"
+  },
+  "author": "Martin Disch",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/martindisch/loadchart/issues"
+  },
+  "homepage": "https://github.com/martindisch/loadchart#readme",
+  "devDependencies": {
+    "eslint": "^5.12.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^4.8.10"
+  }
+}
