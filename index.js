@@ -7,12 +7,26 @@ const exec = util.promisify(require('child_process').exec);
  * Global data
  */
 
+const longTerm = process.argv.length >= 3 && process.argv[2] === 'long';
 const historicalAvg = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-const historicalUnit = [
+const historicalUnit = longTerm ? [
+  '180', '165', '150', '135', '120', '105',
+  '90', '75', '60', '45', '30', '15'
+] : [
   '60', '55', '50', '45', '40', '35',
   '30', '25', '20', '15', '10', '5'
 ];
-let currentAvg = [0, 0, 0];
+
+
+/*
+ * Data gathering function
+ */
+
+async function getLoadAverage() {
+  const { stdout } = await exec('cat /proc/loadavg');
+  const tokens = stdout.split(' ').slice(0, 3);
+  return tokens.map(parseFloat);
+}
 
 
 /*
@@ -46,8 +60,12 @@ const avgSeries = {
   y: historicalAvg
 };
 
-function updateLine() {
+async function updateLine() {
+  const currentAvg = await getLoadAverage();
+  historicalAvg.shift();
+  historicalAvg.push(longTerm ? currentAvg[2] : currentAvg[0]);
   line.setData([avgSeries]);
+  screen.render();
 }
 
 
@@ -65,34 +83,14 @@ const bar = grid.set(
   }
 );
 
-function updateBar() {
+async function updateBar() {
+  const currentAvg = await getLoadAverage();
   bar.setData({
     titles: ['1m', '5m', '15m'],
     data: currentAvg
   });
-}
-
-
-/*
- * Data update functions
- */
-
-async function getLoadAverage() {
-  const { stdout } = await exec('cat /proc/loadavg');
-  const tokens = stdout.split(' ').slice(0, 3);
-  currentAvg = tokens.map(parseFloat);
-  historicalAvg.shift();
-  historicalAvg.push(currentAvg[0]);
-}
-
-async function updateGrid() {
-  await getLoadAverage();
-  updateLine();
-  updateBar();
   screen.render();
 }
-
-setInterval(updateGrid, 5000);
 
 
 /*
@@ -104,7 +102,19 @@ screen.key(['escape', 'q', 'C-c'], () => process.exit(0));
 screen.on('resize', () => {
   line.emit('attach');
   bar.emit('attach');
-  updateGrid();
+  updateLine();
+  updateBar();
 });
 
-updateGrid();
+
+/*
+ * Startup
+ */
+
+// Register update functions
+setInterval(updateLine, longTerm ? 15 * 60 * 1000 : 5 * 1000);
+setInterval(updateBar, 5 * 1000);
+
+// Run them once to draw current state
+updateLine();
+updateBar();
